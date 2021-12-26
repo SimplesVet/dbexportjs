@@ -31,6 +31,11 @@ func exportDbObjectsCmd(objectType string, objectName string) {
 
 	savedFiles := dbexport.SaveDbObjects(dbObjects)
 
+	if len(savedFiles) == 0 {
+		fmt.Println("nenhum resultado encontrado, revise o arquivo de conexão com o banco")
+		return
+	}
+
 	for _, file := range savedFiles {
 		fmt.Println("File saved in", file)
 	}

@@ -3,6 +3,7 @@ package dbexport
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -104,27 +105,38 @@ type DatabaseAdapter interface {
 }
 
 func GetViews(viewName string) []DbObject {
-	return GetDbObjectsFor(VIEWS, viewName)
+	dbName := getDbName()
+	return GetDbObjectsFor(VIEWS, viewName, dbName)
 }
 
 func GetTables(tableName string) []DbObject {
-	return GetDbObjectsFor(TABLES, tableName)
+	dbName := getDbName()
+	return GetDbObjectsFor(TABLES, tableName, dbName)
 }
 
 func GetProcedures(procedureName string) []DbObject {
-	return GetDbObjectsFor(PROCEDURES, procedureName)
+	dbName := getDbName()
+	return GetDbObjectsFor(PROCEDURES, procedureName, dbName)
 }
 
 func GetFunctions(functionName string) []DbObject {
-	return GetDbObjectsFor(FUNCTIONS, functionName)
+	dbName := getDbName()
+	return GetDbObjectsFor(FUNCTIONS, functionName, dbName)
 }
 
 func GetTriggers(triggerName string) []DbObject {
-	return GetDbObjectsFor(TRIGGERS, triggerName)
+	dbName := getDbName()
+	return GetDbObjectsFor(TRIGGERS, triggerName, dbName)
 }
 
 func GetEvents(eventName string) []DbObject {
-	return GetDbObjectsFor(EVENTS, eventName)
+	dbName := getDbName()
+	return GetDbObjectsFor(EVENTS, eventName, dbName)
+}
+
+func getDbName() string {
+	databaseName := os.Getenv("DB_DATABASE")
+	return databaseName
 }
 
 func GetAll() []DbObject {
@@ -157,10 +169,10 @@ func GetAll() []DbObject {
 	return objs
 }
 
-func GetDbObjectsFor(objType, objName string) []DbObject {
+func GetDbObjectsFor(objType, objName string, databaseName string) []DbObject {
 	objects := []DbObject{}
 	dbObject := DbObject{}
-	objNames := GetObjectsFromSchema(objType, objName)
+	objNames := GetObjectsFromSchema(objType, objName, databaseName)
 
 	for _, objName := range objNames {
 		dbObject.Name = objName
@@ -172,13 +184,13 @@ func GetDbObjectsFor(objType, objName string) []DbObject {
 	return objects
 }
 
-func GetObjectsFromSchema(objectType string, objectName string) []string {
+func GetObjectsFromSchema(objectType string, objectName string, databaseName string) []string {
 	var results *sql.Rows
 	var searchParameters []interface{}
 
 	query := queriesForSchema[objectType]
 
-	searchParameters = append(searchParameters, "george")
+	searchParameters = append(searchParameters, databaseName)
 
 	if objectType == TABLES {
 		searchParameters = append(searchParameters, "BASE TABLE")
@@ -240,7 +252,7 @@ func formatResultForTable(result *sql.Row) string {
 
 func GetSqlForView(viewName string) string {
 	query := fmt.Sprintf("SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?")
-	result := ExecuteQueryRow(query, "george", viewName)
+	result := ExecuteQueryRow(query, getDbName(), viewName)
 	return formatResultForView(result, viewName)
 }
 
@@ -347,7 +359,7 @@ func formatFunction(definition string) string {
 
 func GetSqlForTrigger(triggerName string) string {
 	query := "SELECT TRIGGER_NAME, ACTION_STATEMENT, ACTION_TIMING, EVENT_MANIPULATION, EVENT_OBJECT_TABLE, ACTION_ORIENTATION FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA = ? AND TRIGGER_NAME = ?"
-	result := ExecuteQueryRow(query, "george", triggerName)
+	result := ExecuteQueryRow(query, getDbName(), triggerName)
 	return formatResultForTrigger(result)
 }
 
@@ -382,7 +394,7 @@ func formatTrigger(trigger CreateTrigger) string {
 
 func GetSqlForEvent(eventName string) string {
 	query := "SELECT EVENT_NAME, EVENT_DEFINITION, EXECUTE_AT, INTERVAL_VALUE, INTERVAL_FIELD, EVENT_COMMENT, STATUS, ON_COMPLETION, STARTS, ENDS FROM INFORMATION_SCHEMA.EVENTS WHERE EVENT_SCHEMA = ? AND EVENT_NAME = ?"
-	result := ExecuteQueryRow(query, "george", eventName)
+	result := ExecuteQueryRow(query, getDbName(), eventName)
 	return formatResultForEvent(result)
 }
 
