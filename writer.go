@@ -4,9 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -31,8 +29,10 @@ func SaveDbObjects(dbObjects []DbObject) []string {
 }
 
 func makeDbObjectPath(dbObject DbObject) string {
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename))
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return dir + "/export/" + dbObject.Type + "/" + dbObject.Name + ".sql"
 }
 

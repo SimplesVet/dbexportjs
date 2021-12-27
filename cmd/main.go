@@ -71,6 +71,10 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		firstArg := args[0]
 
+		if len(args) == 2 {
+			objName = args[1]
+		}
+
 		if firstArg == "help" {
 			cmd.Help()
 		} else if firstArg == "all" {
