@@ -3,13 +3,19 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/simplesvet/dbexport"
 	"github.com/spf13/cobra"
 )
 
-func exportDbObjectsCmd(objectType string, objectName string) {
-	fmt.Println("Exporting", objectType)
+var objName string
+var timer int
+
+func ExportDbObjectsCmd(objectType string, objectName string, silent bool) int {
+	if !silent {
+		fmt.Println("Exporting", objectType)
+	}
 
 	var dbObjects []dbexport.DbObject
 
@@ -33,15 +39,29 @@ func exportDbObjectsCmd(objectType string, objectName string) {
 
 	if len(savedFiles) == 0 {
 		fmt.Println("nenhum resultado encontrado, revise o arquivo de conexão com o banco")
-		return
+		return 0
 	}
 
-	for _, file := range savedFiles {
-		fmt.Println("File saved in", file)
+	if !silent {
+		for _, file := range savedFiles {
+			fmt.Println("File saved in", file)
+		}
 	}
+
+	return len(savedFiles)
 }
 
-var objName string
+func Observe(interval int) {
+	fmt.Println("listening database")
+	fmt.Println("press ctrl+c to stop")
+	for {
+		duration := time.Duration(interval) * time.Second
+		time.Sleep(duration)
+		fmt.Println("scaning database...")
+		savedObjects := ExportDbObjectsCmd("", "", true)
+		fmt.Printf("saved %d objects\n", savedObjects)
+	}
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "dbexport all | dbexport [object_type] --name [object_name]",
@@ -54,9 +74,28 @@ var rootCmd = &cobra.Command{
 		if firstArg == "help" {
 			cmd.Help()
 		} else if firstArg == "all" {
-			exportDbObjectsCmd("", "")
+			ExportDbObjectsCmd("", "", false)
 		} else {
-			exportDbObjectsCmd(firstArg, objName)
+			ExportDbObjectsCmd(firstArg, objName, false)
+		}
+	},
+}
+
+var observeCmd = &cobra.Command{
+	Use:   "observe --interval [intervalo] | i [intervalo]",
+	Short: "Observe listen get changes in your database",
+	Long:  `Observe listen get changes in your database`,
+	Args:  cobra.MinimumNArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		firstArg := ""
+		if len(args) > 0 {
+			firstArg = args[0]
+		}
+
+		if firstArg == "help" {
+			cmd.Help()
+		} else {
+			Observe(timer)
 		}
 	},
 }
@@ -64,6 +103,9 @@ var rootCmd = &cobra.Command{
 func main() {
 	dbexport.GetConfig()
 	rootCmd.Flags().StringVarP(&objName, "name", "n", "", "nome do objeto no banco")
+	observeCmd.Flags().IntVarP(&timer, "interval", "i", 5, "tempo de espera para baixar atualizações")
+
+	rootCmd.AddCommand(observeCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
