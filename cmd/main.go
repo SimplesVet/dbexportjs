@@ -35,6 +35,11 @@ func ExportDbObjectsCmd(objectType string, objectName string, silent bool) int {
 		dbObjects = dbexport.GetAll()
 	}
 
+	if len(dbObjects) == 0 {
+		fmt.Println("nenhum objeto encontrado, revise o arquivo de conexão com o banco")
+		return 0
+	}
+
 	savedFiles := dbexport.SaveDbObjects(dbObjects)
 
 	if len(savedFiles) == 0 {
@@ -64,7 +69,7 @@ func Observe(interval int) {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "dbexport all | dbexport [object_type] --name [object_name]",
+	Use:   "dbexport all | dbexport [object_type] [object_name] | dbexport [object_type] --name object_name",
 	Short: "DBExport is a fast tool to sync databases objects with the file system",
 	Long:  `DBExport is a fast tool to sync databases objects with the file system`,
 	Args:  cobra.MinimumNArgs(1),

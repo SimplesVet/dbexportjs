@@ -60,7 +60,7 @@ typings/
 # next.js build output
 .next
 
-.env.local
+.env.*
 export
 vendor
 dbexport

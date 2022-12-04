@@ -8,10 +8,15 @@ import (
 )
 
 func GetConfig() {
-	err := gotenv.Load(".env.local")
+	env := os.Getenv("DB_ENV")
+
+	if env == "" {
+		env = "local"
+	}
+
+	err := gotenv.Load(".env." + env)
+
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
-
-	fmt.Println(os.Getenv("DB_DATABASE"))
 }

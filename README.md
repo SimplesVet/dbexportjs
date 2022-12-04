@@ -1,21 +1,21 @@
 # dbexport
 Pacote para exportar e sincronizar de forma fácil os objetos do seu banco de dados.
 
-Adicione na seção scripts do seu `package.json`
+## Como usar
 
-```
-"scripts": {
-    "db:export": "dbexport",
-    "db:sync": "dbsync",
-    ...
-  },
-```
+* Criar o arquivo `.env.local` com os mesmos dados do `.env.local.example`
+* Caso queira usar em ambiente diferentes você pode criar arquivos para cada ambiente ex `.env.local`, `.env.prod`, `.env.test` com os mesmos dados do `.env.local.example`
 
 #### rodando
-`npm run db:export`
 
-`npm run db:export procedures`
+`./dbexport all`
 
-`npm run db:export triggers tg_pessoa_ins_after`
+`./dbexport procedures`
 
-`npm run db:sync`
+`./dbexport triggers tg_pessoa_ins_after`
+
+`./dbexport observe -t 5`
+
+Rodando para um ambiente específico
+
+`DB_ENV=prod ./dbexport all`
