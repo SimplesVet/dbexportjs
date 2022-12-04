@@ -3,6 +3,7 @@ package dbexport
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -12,6 +13,7 @@ var PROCEDURES string = "procedures"
 var FUNCTIONS string = "functions"
 var TRIGGERS string = "triggers"
 var EVENTS string = "events"
+var DbName string = os.Getenv("DB_DATABASE")
 
 var queriesForSchema = map[string]string{
 	TABLES:     "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_TYPE = ?",
@@ -178,7 +180,7 @@ func GetObjectsFromSchema(objectType string, objectName string) []string {
 
 	query := queriesForSchema[objectType]
 
-	searchParameters = append(searchParameters, "george")
+	searchParameters = append(searchParameters, DbName)
 
 	if objectType == TABLES {
 		searchParameters = append(searchParameters, "BASE TABLE")
@@ -240,7 +242,7 @@ func formatResultForTable(result *sql.Row) string {
 
 func GetSqlForView(viewName string) string {
 	query := fmt.Sprintf("SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?")
-	result := ExecuteQueryRow(query, "george", viewName)
+	result := ExecuteQueryRow(query, DbName, viewName)
 	return formatResultForView(result, viewName)
 }
 
@@ -347,7 +349,7 @@ func formatFunction(definition string) string {
 
 func GetSqlForTrigger(triggerName string) string {
 	query := "SELECT TRIGGER_NAME, ACTION_STATEMENT, ACTION_TIMING, EVENT_MANIPULATION, EVENT_OBJECT_TABLE, ACTION_ORIENTATION FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA = ? AND TRIGGER_NAME = ?"
-	result := ExecuteQueryRow(query, "george", triggerName)
+	result := ExecuteQueryRow(query, DbName, triggerName)
 	return formatResultForTrigger(result)
 }
 
@@ -382,7 +384,7 @@ func formatTrigger(trigger CreateTrigger) string {
 
 func GetSqlForEvent(eventName string) string {
 	query := "SELECT EVENT_NAME, EVENT_DEFINITION, EXECUTE_AT, INTERVAL_VALUE, INTERVAL_FIELD, EVENT_COMMENT, STATUS, ON_COMPLETION, STARTS, ENDS FROM INFORMATION_SCHEMA.EVENTS WHERE EVENT_SCHEMA = ? AND EVENT_NAME = ?"
-	result := ExecuteQueryRow(query, "george", eventName)
+	result := ExecuteQueryRow(query, DbName, eventName)
 	return formatResultForEvent(result)
 }
 
