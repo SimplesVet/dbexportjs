@@ -67,8 +67,6 @@ INSERT INTO test_table (name) VALUES (NEW.username)
 $$
 DELIMITER ;
 
-DROP EVENT ev_delete_test_data;
-
 CREATE EVENT ev_delete_test_data
 ON SCHEDULE EVERY 1 HOUR
 STARTS '2020-09-12 17:31:41.000'
@@ -77,10 +75,9 @@ ENABLE
 COMMENT 'Clears test data every hour.'
 DO DELETE FROM test_table ;
 
-DROP EVENTev_count_users;
-
 CREATE EVENT ev_count_users
+ON SCHEDULE EVERY 1 HOUR
+STARTS '2020-09-12 18:31:41.000'
 ON COMPLETION NOT PRESERVE
 ENABLE
 DO SELECT COUNT(1) FROM users ;
-

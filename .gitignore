@@ -62,3 +62,5 @@ typings/
 
 .env.local
 export
+vendor
+dbexport
